@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- `ui.sidebar_position` can now move the sidebar to the right side of the screen; it defaults to `left`.
+
 ### Fixed
 - Claude Code panes now use visible turn, background shell, and background agent activity as working-state fallbacks when OSC titles are unavailable or disabled. (#1630, #2241)
 - Tab bar status commands now remove ESC-prefixed terminal control sequences instead of displaying their sequence bodies as text. (#3001)

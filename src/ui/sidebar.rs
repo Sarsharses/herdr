@@ -1722,7 +1722,8 @@ mod tests {
             .draw(|frame| render_sidebar(&app, &TerminalRuntimeRegistry::new(), frame, area))
             .unwrap();
         let buffer = terminal.backend().buffer();
-        let (_, agent_area) = expanded_sidebar_sections(area, app.sidebar_section_split, app.sidebar_position);
+        let (_, agent_area) =
+            expanded_sidebar_sections(area, app.sidebar_section_split, app.sidebar_position);
         let body = agent_panel_body_rect(agent_area, false);
 
         let first = row_text(buffer, body.y, 25);
@@ -1773,7 +1774,8 @@ rows = [[{ token = "workspace", bold = false }, { token = "agent", dim = false }
         terminal
             .draw(|frame| render_sidebar(&app, &TerminalRuntimeRegistry::new(), frame, area))
             .unwrap();
-        let (_, agent_area) = expanded_sidebar_sections(area, app.sidebar_section_split, app.sidebar_position);
+        let (_, agent_area) =
+            expanded_sidebar_sections(area, app.sidebar_section_split, app.sidebar_position);
         let body = agent_panel_body_rect(agent_area, false);
         let buffer = terminal.backend().buffer();
         let workspace = buffer[(find_symbol_x(buffer, body.y, body.width, "o"), body.y)].style();
@@ -2064,7 +2066,8 @@ rows = [[{ token = "git_status", fg = "#123456" }]]
             .draw(|frame| render_sidebar(&app, &TerminalRuntimeRegistry::new(), frame, area))
             .unwrap();
         let buffer = terminal.backend().buffer();
-        let (_, agent_area) = expanded_sidebar_sections(area, app.sidebar_section_split, app.sidebar_position);
+        let (_, agent_area) =
+            expanded_sidebar_sections(area, app.sidebar_section_split, app.sidebar_position);
         let body = agent_panel_body_rect(agent_area, false);
         let first = row_text(buffer, body.y, 17);
 
@@ -2094,7 +2097,8 @@ rows = [[{ token = "git_status", fg = "#123456" }]]
         renderer
             .draw(|frame| render_sidebar(&app, &TerminalRuntimeRegistry::new(), frame, area))
             .unwrap();
-        let (_, agent_area) = expanded_sidebar_sections(area, app.sidebar_section_split, app.sidebar_position);
+        let (_, agent_area) =
+            expanded_sidebar_sections(area, app.sidebar_section_split, app.sidebar_position);
         let body = agent_panel_body_rect(agent_area, false);
         let rendered = row_text(renderer.backend().buffer(), body.y, 9);
 
@@ -2170,7 +2174,8 @@ rows = [[{ token = "git_status", fg = "#123456" }]]
         app.workspaces = vec![Workspace::test_new("one"), Workspace::test_new("two")];
         app.sidebar_spaces.rows = vec![vec![crate::config::SpaceSidebarToken::Workspace]; 6];
         let area = Rect::new(0, 0, 20, 10);
-        let workspace_area = workspace_list_rect(area, app.sidebar_section_split, app.sidebar_position);
+        let workspace_area =
+            workspace_list_rect(area, app.sidebar_section_split, app.sidebar_position);
         let body = workspace_list_body_rect(workspace_area, false);
 
         let metrics = workspace_list_scroll_metrics(&app, workspace_area);
@@ -2703,7 +2708,8 @@ rows = [[{ token = "git_status", fg = "#123456" }]]
 
     #[test]
     fn expanded_sidebar_sections_handle_tiny_heights() {
-        let (ws_area, detail_area) = expanded_sidebar_sections(Rect::new(0, 0, 20, 5), 0.9, SidebarPositionConfig::Left);
+        let (ws_area, detail_area) =
+            expanded_sidebar_sections(Rect::new(0, 0, 20, 5), 0.9, SidebarPositionConfig::Left);
 
         assert_eq!(ws_area, Rect::new(0, 0, 19, 3));
         assert_eq!(detail_area, Rect::new(0, 3, 19, 2));
@@ -2738,7 +2744,8 @@ rows = [[{ token = "git_status", fg = "#123456" }]]
 
     #[test]
     fn sidebar_section_divider_is_hidden_for_tiny_heights() {
-        let divider = sidebar_section_divider_rect(Rect::new(0, 0, 20, 5), 0.5, SidebarPositionConfig::Left);
+        let divider =
+            sidebar_section_divider_rect(Rect::new(0, 0, 20, 5), 0.5, SidebarPositionConfig::Left);
 
         assert_eq!(divider, Rect::default());
     }

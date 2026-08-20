@@ -334,7 +334,8 @@ impl AppState {
             return None;
         }
 
-        let (ws_area, _, _) = crate::ui::collapsed_sidebar_sections(self.view.sidebar_rect, self.sidebar_position);
+        let (ws_area, _, _) =
+            crate::ui::collapsed_sidebar_sections(self.view.sidebar_rect, self.sidebar_position);
         if ws_area == Rect::default() || row < ws_area.y || row >= ws_area.y + ws_area.height {
             return None;
         }
@@ -351,7 +352,8 @@ impl AppState {
             return None;
         }
 
-        let (_, _, detail_area) = crate::ui::collapsed_sidebar_sections(self.view.sidebar_rect, self.sidebar_position);
+        let (_, _, detail_area) =
+            crate::ui::collapsed_sidebar_sections(self.view.sidebar_rect, self.sidebar_position);
         let detail_content_area = Rect::new(
             detail_area.x,
             detail_area.y,
@@ -1092,8 +1094,10 @@ mod tests {
         app.state.view.sidebar_rect = Rect::new(0, 0, 4, 20);
         app.state.view.terminal_area = Rect::new(4, 0, 80, 20);
 
-        let (_, _, detail_area) =
-            crate::ui::collapsed_sidebar_sections(app.state.view.sidebar_rect, app.state.sidebar_position);
+        let (_, _, detail_area) = crate::ui::collapsed_sidebar_sections(
+            app.state.view.sidebar_rect,
+            app.state.sidebar_position,
+        );
         app.handle_mouse(mouse(
             MouseEventKind::Down(MouseButton::Left),
             detail_area.x,
@@ -1137,8 +1141,10 @@ mod tests {
         set_state(&mut app, 0, first_pane, AgentState::Working);
         set_state(&mut app, 1, second_pane, AgentState::Blocked);
 
-        let (_, _, detail_area) =
-            crate::ui::collapsed_sidebar_sections(app.state.view.sidebar_rect, app.state.sidebar_position);
+        let (_, _, detail_area) = crate::ui::collapsed_sidebar_sections(
+            app.state.view.sidebar_rect,
+            app.state.sidebar_position,
+        );
         app.handle_mouse(mouse(
             MouseEventKind::Down(MouseButton::Left),
             detail_area.x,
@@ -1160,7 +1166,10 @@ mod tests {
         app.state.view.sidebar_rect = Rect::new(0, 0, 4, 20);
         app.state.view.terminal_area = Rect::new(4, 0, 80, 20);
 
-        let toggle = crate::ui::collapsed_sidebar_toggle_rect(app.state.view.sidebar_rect, app.state.sidebar_position);
+        let toggle = crate::ui::collapsed_sidebar_toggle_rect(
+            app.state.view.sidebar_rect,
+            app.state.sidebar_position,
+        );
         app.handle_mouse(mouse(
             MouseEventKind::Down(MouseButton::Left),
             toggle.x,
@@ -1190,7 +1199,10 @@ mod tests {
         app.state.view.sidebar_rect = Rect::new(0, 0, 26, 20);
         app.state.view.terminal_area = Rect::new(26, 0, 80, 20);
 
-        let toggle = crate::ui::expanded_sidebar_toggle_rect(app.state.view.sidebar_rect, app.state.sidebar_position);
+        let toggle = crate::ui::expanded_sidebar_toggle_rect(
+            app.state.view.sidebar_rect,
+            app.state.sidebar_position,
+        );
         app.handle_mouse(mouse(
             MouseEventKind::Down(MouseButton::Left),
             toggle.x,
