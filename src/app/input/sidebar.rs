@@ -10,7 +10,7 @@ impl AppState {
         if self.sidebar_collapsed || sidebar.width <= 1 || sidebar.height == 0 {
             return Rect::default();
         }
-        crate::ui::workspace_list_rect(sidebar, self.sidebar_section_split)
+        crate::ui::workspace_list_rect(sidebar, self.sidebar_section_split, self.sidebar_position)
     }
 
     pub(super) fn agent_panel_rect(&self) -> Rect {
@@ -18,8 +18,11 @@ impl AppState {
         if self.sidebar_collapsed || sidebar.width <= 1 || sidebar.height == 0 {
             return Rect::default();
         }
-        let (_, detail_area) =
-            crate::ui::expanded_sidebar_sections(sidebar, self.sidebar_section_split);
+        let (_, detail_area) = crate::ui::expanded_sidebar_sections(
+            sidebar,
+            self.sidebar_section_split,
+            self.sidebar_position,
+        );
         detail_area
     }
 
@@ -238,7 +241,7 @@ impl AppState {
             return false;
         }
         let sidebar = self.view.sidebar_rect;
-        let toggle = crate::ui::expanded_sidebar_toggle_rect(sidebar);
+        let toggle = crate::ui::expanded_sidebar_toggle_rect(sidebar, self.sidebar_position);
         let on_toggle = toggle.width > 0
             && col >= toggle.x
             && col < toggle.x + toggle.width
@@ -258,9 +261,9 @@ impl AppState {
 
     pub(super) fn on_sidebar_toggle(&self, col: u16, row: u16) -> bool {
         let rect = if self.sidebar_collapsed {
-            crate::ui::collapsed_sidebar_toggle_rect(self.view.sidebar_rect)
+            crate::ui::collapsed_sidebar_toggle_rect(self.view.sidebar_rect, self.sidebar_position)
         } else {
-            crate::ui::expanded_sidebar_toggle_rect(self.view.sidebar_rect)
+            crate::ui::expanded_sidebar_toggle_rect(self.view.sidebar_rect, self.sidebar_position)
         };
         rect.width > 0
             && col >= rect.x
@@ -288,6 +291,7 @@ impl AppState {
         let rect = crate::ui::sidebar_section_divider_rect(
             self.view.sidebar_rect,
             self.sidebar_section_split,
+            self.sidebar_position,
         );
         rect.width > 0
             && col >= rect.x
@@ -330,7 +334,7 @@ impl AppState {
             return None;
         }
 
-        let (ws_area, _, _) = crate::ui::collapsed_sidebar_sections(self.view.sidebar_rect);
+        let (ws_area, _, _) = crate::ui::collapsed_sidebar_sections(self.view.sidebar_rect, self.sidebar_position);
         if ws_area == Rect::default() || row < ws_area.y || row >= ws_area.y + ws_area.height {
             return None;
         }
@@ -347,7 +351,7 @@ impl AppState {
             return None;
         }
 
-        let (_, _, detail_area) = crate::ui::collapsed_sidebar_sections(self.view.sidebar_rect);
+        let (_, _, detail_area) = crate::ui::collapsed_sidebar_sections(self.view.sidebar_rect, self.sidebar_position);
         let detail_content_area = Rect::new(
             detail_area.x,
             detail_area.y,
@@ -482,6 +486,7 @@ impl AppState {
         let (_, detail_area) = crate::ui::expanded_sidebar_sections(
             self.view.sidebar_rect,
             self.sidebar_section_split,
+            self.sidebar_position,
         );
         let rect = crate::ui::agent_panel_toggle_rect(detail_area, self.agent_panel_sort);
         rect.width > 0
@@ -864,6 +869,7 @@ mod tests {
         let (_, detail_area) = crate::ui::expanded_sidebar_sections(
             app.state.view.sidebar_rect,
             app.state.sidebar_section_split,
+            app.state.sidebar_position,
         );
         let toggle = crate::ui::agent_panel_toggle_rect(detail_area, app.state.agent_panel_sort);
         app.handle_mouse(mouse(
@@ -910,6 +916,7 @@ mod tests {
         let (_, detail_area) = crate::ui::expanded_sidebar_sections(
             app.state.view.sidebar_rect,
             app.state.sidebar_section_split,
+            app.state.sidebar_position,
         );
         app.handle_mouse(mouse(
             MouseEventKind::Down(MouseButton::Left),
@@ -1086,7 +1093,7 @@ mod tests {
         app.state.view.terminal_area = Rect::new(4, 0, 80, 20);
 
         let (_, _, detail_area) =
-            crate::ui::collapsed_sidebar_sections(app.state.view.sidebar_rect);
+            crate::ui::collapsed_sidebar_sections(app.state.view.sidebar_rect, app.state.sidebar_position);
         app.handle_mouse(mouse(
             MouseEventKind::Down(MouseButton::Left),
             detail_area.x,
@@ -1131,7 +1138,7 @@ mod tests {
         set_state(&mut app, 1, second_pane, AgentState::Blocked);
 
         let (_, _, detail_area) =
-            crate::ui::collapsed_sidebar_sections(app.state.view.sidebar_rect);
+            crate::ui::collapsed_sidebar_sections(app.state.view.sidebar_rect, app.state.sidebar_position);
         app.handle_mouse(mouse(
             MouseEventKind::Down(MouseButton::Left),
             detail_area.x,
@@ -1153,7 +1160,7 @@ mod tests {
         app.state.view.sidebar_rect = Rect::new(0, 0, 4, 20);
         app.state.view.terminal_area = Rect::new(4, 0, 80, 20);
 
-        let toggle = crate::ui::collapsed_sidebar_toggle_rect(app.state.view.sidebar_rect);
+        let toggle = crate::ui::collapsed_sidebar_toggle_rect(app.state.view.sidebar_rect, app.state.sidebar_position);
         app.handle_mouse(mouse(
             MouseEventKind::Down(MouseButton::Left),
             toggle.x,
@@ -1183,7 +1190,7 @@ mod tests {
         app.state.view.sidebar_rect = Rect::new(0, 0, 26, 20);
         app.state.view.terminal_area = Rect::new(26, 0, 80, 20);
 
-        let toggle = crate::ui::expanded_sidebar_toggle_rect(app.state.view.sidebar_rect);
+        let toggle = crate::ui::expanded_sidebar_toggle_rect(app.state.view.sidebar_rect, app.state.sidebar_position);
         app.handle_mouse(mouse(
             MouseEventKind::Down(MouseButton::Left),
             toggle.x,
@@ -1938,6 +1945,7 @@ mod tests {
         let divider = crate::ui::sidebar_section_divider_rect(
             app.state.view.sidebar_rect,
             app.state.sidebar_section_split,
+            app.state.sidebar_position,
         );
 
         app.handle_mouse(mouse(
