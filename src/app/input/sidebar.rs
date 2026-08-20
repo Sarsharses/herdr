@@ -244,9 +244,14 @@ impl AppState {
             && col < toggle.x + toggle.width
             && row >= toggle.y
             && row < toggle.y + toggle.height;
+        let divider_col = if self.sidebar_position.is_right() {
+            sidebar.x
+        } else {
+            sidebar.x + sidebar.width.saturating_sub(1)
+        };
         sidebar.width > 0
             && !on_toggle
-            && col == sidebar.x + sidebar.width.saturating_sub(1)
+            && col == divider_col
             && row >= sidebar.y
             && row < sidebar.y + sidebar.height
     }
@@ -266,7 +271,11 @@ impl AppState {
 
     pub(super) fn set_manual_sidebar_width(&mut self, divider_col: u16) {
         let sidebar = self.view.sidebar_rect;
-        let width = divider_col.saturating_sub(sidebar.x).saturating_add(1);
+        let width = if self.sidebar_position.is_right() {
+            (sidebar.x + sidebar.width).saturating_sub(divider_col)
+        } else {
+            divider_col.saturating_sub(sidebar.x).saturating_add(1)
+        };
         self.sidebar_width = width.clamp(self.sidebar_min_width, self.sidebar_max_width);
         self.sidebar_width_source = crate::app::state::SidebarWidthSource::Manual;
         self.mark_session_dirty();
@@ -1867,6 +1876,38 @@ mod tests {
         ));
 
         assert_eq!(app.state.sidebar_width, 31);
+    }
+
+    #[test]
+    fn right_sidebar_manual_width_pins_outer_edge() {
+        // Right-pinned sidebar on a 120-column screen: width 26 -> x 94, so the
+        // outer (right) edge sits at screen_w = 120 and the divider is the inner
+        // (left) edge at x = 94.
+        const SCREEN_W: u16 = 120;
+        let mut app = app_for_mouse_test();
+        app.state.sidebar_position = crate::config::SidebarPositionConfig::Right;
+
+        let mut resize_to = |divider_col: u16| {
+            // Reset the pre-drag rect each time; a drag starts from the same layout.
+            app.state.view.sidebar_rect = Rect::new(SCREEN_W - 26, 0, 26, 20);
+            app.state.set_manual_sidebar_width(divider_col);
+            app.state.sidebar_width
+        };
+
+        // Dropping at the current inner edge reproduces the width (no drift).
+        assert_eq!(resize_to(94), 26);
+        // Moving the divider toward screen-centre grows the width...
+        assert_eq!(resize_to(90), 30);
+        // ...and toward the screen edge shrinks it.
+        assert_eq!(resize_to(98), 22);
+
+        // The outer edge stays pinned to the screen edge as width changes.
+        for &(divider, expected) in &[(94u16, 26u16), (90, 30), (98, 22)] {
+            let width = resize_to(divider);
+            assert_eq!(width, expected);
+            let placed_x = SCREEN_W - width;
+            assert_eq!(placed_x + width, SCREEN_W, "right edge must stay pinned");
+        }
     }
 
     #[test]

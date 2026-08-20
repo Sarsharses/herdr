@@ -234,8 +234,13 @@ fn compute_view_internal(
             .clamp(app.sidebar_min_width, app.sidebar_max_width)
     };
 
-    let [sidebar_area, main_area] =
-        Layout::horizontal([Constraint::Length(sidebar_w), Constraint::Min(1)]).areas(area);
+    let [sidebar_area, main_area] = if app.sidebar_position.is_right() {
+        let [main_area, sidebar_area] =
+            Layout::horizontal([Constraint::Min(1), Constraint::Length(sidebar_w)]).areas(area);
+        [sidebar_area, main_area]
+    } else {
+        Layout::horizontal([Constraint::Length(sidebar_w), Constraint::Min(1)]).areas(area)
+    };
 
     let (tab_bar_rect, terminal_area) = app
         .active
