@@ -4,8 +4,35 @@ use ratatui::{
     widgets::{Paragraph, Widget},
 };
 
-fn collapsed_sidebar_sections(area: Rect) -> (Rect, Option<u16>, Rect) {
-    let content = Rect::new(area.x, area.y, area.width.saturating_sub(1), area.height);
+fn collapsed_toggle_glyph(pos: crate::config::SidebarPositionConfig) -> &'static str {
+    if pos.is_right() {
+        "«"
+    } else {
+        "»"
+    }
+}
+
+fn expanded_toggle_glyph(pos: crate::config::SidebarPositionConfig) -> &'static str {
+    if pos.is_right() {
+        "»"
+    } else {
+        "«"
+    }
+}
+
+fn expanded_toggle_x(area: Rect, pos: crate::config::SidebarPositionConfig) -> u16 {
+    if pos.is_right() {
+        area.x.saturating_add(1)
+    } else {
+        area.right().saturating_sub(2)
+    }
+}
+
+fn collapsed_sidebar_sections(
+    area: Rect,
+    pos: crate::config::SidebarPositionConfig,
+) -> (Rect, Option<u16>, Rect) {
+    let content = crate::ui::sidebar_content_rect(area, pos);
     if content.is_empty() {
         return (Rect::default(), None, Rect::default());
     }
@@ -31,8 +58,9 @@ pub(crate) fn render_collapsed_sidebar(
     hits: &mut ShellHitMap,
 ) {
     let palette = &config.palette;
-    render_sidebar_background(buffer, area, palette);
-    let (workspace_area, divider_y, detail_area) = collapsed_sidebar_sections(area);
+    render_sidebar_background(buffer, area, palette, config.sidebar_position);
+    let (workspace_area, divider_y, detail_area) =
+        collapsed_sidebar_sections(area, config.sidebar_position);
     for (index, workspace) in snapshot
         .workspaces
         .iter()
@@ -166,7 +194,7 @@ pub(crate) fn render_collapsed_sidebar(
         hits.sidebar_toggle.x,
         hits.sidebar_toggle.y,
         hits.sidebar_toggle.width,
-        "»",
+        collapsed_toggle_glyph(config.sidebar_position),
         if super::super::global_menu::global_menu_attention(snapshot) {
             Style::default()
                 .fg(palette.accent)
@@ -186,16 +214,28 @@ pub(crate) fn render_sidebar(
     hits: &mut ShellHitMap,
 ) {
     let palette = &config.palette;
-    render_sidebar_background(buffer, area, palette);
+    render_sidebar_background(buffer, area, palette, config.sidebar_position);
     hits.sidebar_divider = if area.is_empty() {
         Rect::default()
     } else {
-        Rect::new(area.right().saturating_sub(1), area.y, 1, area.height)
+        Rect::new(
+            crate::ui::sidebar_separator_x(area, config.sidebar_position),
+            area.y,
+            1,
+            area.height,
+        )
     };
-    let (workspace_area, detail_area) =
-        crate::ui::expanded_sidebar_sections(area, state.sidebar_section_split);
-    hits.sidebar_section_divider =
-        crate::ui::sidebar_section_divider_rect(area, state.sidebar_section_split);
+    hits.sidebar_outer_edge = area.right();
+    let (workspace_area, detail_area) = crate::ui::expanded_sidebar_sections(
+        area,
+        state.sidebar_section_split,
+        config.sidebar_position,
+    );
+    hits.sidebar_section_divider = crate::ui::sidebar_section_divider_rect(
+        area,
+        state.sidebar_section_split,
+        config.sidebar_position,
+    );
     put_text(
         buffer,
         workspace_area.x,
@@ -425,7 +465,7 @@ pub(crate) fn render_sidebar(
     );
 
     hits.sidebar_toggle = Rect::new(
-        area.right().saturating_sub(2),
+        expanded_toggle_x(area, config.sidebar_position),
         area.bottom().saturating_sub(1),
         u16::from(area.width > 1),
         u16::from(area.height > 0),
@@ -435,14 +475,19 @@ pub(crate) fn render_sidebar(
         hits.sidebar_toggle.x,
         hits.sidebar_toggle.y,
         hits.sidebar_toggle.width,
-        "«",
+        expanded_toggle_glyph(config.sidebar_position),
         Style::default().fg(palette.overlay0),
     );
 }
 
-pub(crate) fn render_sidebar_background(buffer: &mut Buffer, area: Rect, palette: &Palette) {
+pub(crate) fn render_sidebar_background(
+    buffer: &mut Buffer,
+    area: Rect,
+    palette: &Palette,
+    pos: crate::config::SidebarPositionConfig,
+) {
     buffer.set_style(area, Style::default().bg(palette.sidebar_bg));
-    let separator_x = area.right().saturating_sub(1);
+    let separator_x = crate::ui::sidebar_separator_x(area, pos);
     for y in area.y..area.bottom() {
         if let Some(cell) = buffer.cell_mut((separator_x, y)) {
             cell.set_symbol("│");

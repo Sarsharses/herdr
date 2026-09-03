@@ -101,6 +101,7 @@ impl ClientShellConfig {
             sidebar_max_width: config.ui.sidebar_max_width,
             sidebar_start_collapsed: config.ui.sidebar_start_collapsed,
             sidebar_collapsed_mode: config.ui.sidebar_collapsed_mode,
+            sidebar_position: config.ui.sidebar_position,
             mobile_width_threshold: config.ui.mobile_width_threshold,
             tab_bar_position: config.ui.tab_bar_position,
             hide_tab_bar_when_single_tab: config.ui.hide_tab_bar_when_single_tab,
@@ -303,6 +304,7 @@ impl ClientShellConfig {
                 self.sidebar_min_width = ui.sidebar_min_width;
                 self.sidebar_max_width = ui.sidebar_max_width;
                 self.sidebar_collapsed_mode = ui.sidebar_collapsed_mode;
+                self.sidebar_position = ui.sidebar_position;
                 self.mobile_width_threshold = ui.mobile_width_threshold;
                 self.tab_bar_position = ui.tab_bar_position;
                 self.hide_tab_bar_when_single_tab = ui.hide_tab_bar_when_single_tab;
@@ -372,7 +374,12 @@ impl ClientShellConfig {
             sidebar_width.clamp(min, max)
         }
         .min(cols.saturating_sub(1));
-        let main = Rect::new(sidebar_width, 0, cols.saturating_sub(sidebar_width), rows);
+        let (sidebar_x, main_x) = if self.sidebar_position.is_right() {
+            (cols.saturating_sub(sidebar_width), 0)
+        } else {
+            (0, sidebar_width)
+        };
+        let main = Rect::new(main_x, 0, cols.saturating_sub(sidebar_width), rows);
         let show_tab_bar = rows > 1 && !(self.hide_tab_bar_when_single_tab && tab_count == 1);
         let tab_height = u16::from(show_tab_bar);
         let (tab_bar, pane_surface) = match self.tab_bar_position {
@@ -397,7 +404,7 @@ impl ClientShellConfig {
         };
 
         ClientShellLayout {
-            sidebar: Rect::new(0, 0, sidebar_width, rows),
+            sidebar: Rect::new(sidebar_x, 0, sidebar_width, rows),
             tab_bar,
             mobile_header: Rect::default(),
             pane_surface,
@@ -462,6 +469,20 @@ mod tests {
             shell.keybinds.prefix,
             (KeyCode::Char('a'), KeyModifiers::CONTROL)
         );
+    }
+
+    #[test]
+    fn sidebar_position_flips_layout_to_the_right_edge() {
+        let mut config = Config::default();
+        config.ui.sidebar_position = crate::config::SidebarPositionConfig::Left;
+        let left = ClientShellConfig::from_config(&config).layout(100, 30, false, 1, 20);
+        assert_eq!(left.sidebar, Rect::new(0, 0, 20, 30));
+        assert_eq!(left.pane_surface.x, 20);
+
+        config.ui.sidebar_position = crate::config::SidebarPositionConfig::Right;
+        let right = ClientShellConfig::from_config(&config).layout(100, 30, false, 1, 20);
+        assert_eq!(right.sidebar, Rect::new(80, 0, 20, 30));
+        assert_eq!(right.pane_surface.x, 0);
     }
 
     #[test]

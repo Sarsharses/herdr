@@ -10,7 +10,12 @@ impl ClientShellState {
             self.config.sidebar_max_width,
         )
         .unwrap_or((18, 36));
-        let width = column.saturating_add(1).clamp(min, max);
+        let width = if self.config.sidebar_position.is_right() {
+            self.hits.sidebar_outer_edge.saturating_sub(column)
+        } else {
+            column.saturating_add(1)
+        }
+        .clamp(min, max);
         if self.sidebar_width != width {
             self.sidebar_width = width;
             self.sidebar_width_manual = true;
