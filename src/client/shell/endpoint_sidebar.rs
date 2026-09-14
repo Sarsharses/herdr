@@ -210,7 +210,7 @@ pub(super) fn render_collapsed(
         hits.sidebar_toggle.x,
         hits.sidebar_toggle.y,
         hits.sidebar_toggle.width,
-        "»",
+        super::sidebar::collapsed_toggle_glyph(config.sidebar_position),
         Style::default().fg(palette.overlay0),
     );
 }
@@ -228,7 +228,12 @@ pub(super) fn render_expanded(
     hits.sidebar_divider = if area.is_empty() {
         Rect::default()
     } else {
-        Rect::new(area.right().saturating_sub(1), area.y, 1, area.height)
+        Rect::new(
+            crate::ui::sidebar_separator_x(area, config.sidebar_position),
+            area.y,
+            1,
+            area.height,
+        )
     };
     let (workspace_area, detail_area) = crate::ui::expanded_sidebar_sections(
         area,
@@ -525,7 +530,7 @@ pub(super) fn render_expanded(
         hits,
     );
     hits.sidebar_toggle = Rect::new(
-        area.right().saturating_sub(2),
+        super::sidebar::expanded_toggle_x(area, config.sidebar_position),
         area.bottom().saturating_sub(1),
         u16::from(area.width > 1),
         u16::from(area.height > 0),
@@ -535,7 +540,7 @@ pub(super) fn render_expanded(
         hits.sidebar_toggle.x,
         hits.sidebar_toggle.y,
         hits.sidebar_toggle.width,
-        "«",
+        super::sidebar::expanded_toggle_glyph(config.sidebar_position),
         Style::default().fg(palette.overlay0),
     );
 }
