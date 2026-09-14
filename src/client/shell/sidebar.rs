@@ -24,7 +24,9 @@ pub(in crate::client::shell) fn workspace_active_background(
     }
 }
 
-fn collapsed_toggle_glyph(pos: crate::config::SidebarPositionConfig) -> &'static str {
+pub(in crate::client::shell) fn collapsed_toggle_glyph(
+    pos: crate::config::SidebarPositionConfig,
+) -> &'static str {
     if pos.is_right() {
         "«"
     } else {
@@ -32,7 +34,9 @@ fn collapsed_toggle_glyph(pos: crate::config::SidebarPositionConfig) -> &'static
     }
 }
 
-fn expanded_toggle_glyph(pos: crate::config::SidebarPositionConfig) -> &'static str {
+pub(in crate::client::shell) fn expanded_toggle_glyph(
+    pos: crate::config::SidebarPositionConfig,
+) -> &'static str {
     if pos.is_right() {
         "»"
     } else {
@@ -40,7 +44,10 @@ fn expanded_toggle_glyph(pos: crate::config::SidebarPositionConfig) -> &'static 
     }
 }
 
-fn expanded_toggle_x(area: Rect, pos: crate::config::SidebarPositionConfig) -> u16 {
+pub(in crate::client::shell) fn expanded_toggle_x(
+    area: Rect,
+    pos: crate::config::SidebarPositionConfig,
+) -> u16 {
     if pos.is_right() {
         area.x.saturating_add(1)
     } else {
